@@ -29,8 +29,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  List thisReminderList = [];
-
   @override
   void initState() {
     super.initState();
@@ -51,21 +49,19 @@ class _DashboardPageState extends State<DashboardPage> {
       api.getReminders(auth.user!.id, context),
       api.getUserExpenses(auth.user!.id, context),
     ]);
-
-    api.expenseReminderList.map((rem) {
-      debugPrint('${rem['reminderName']}:::${rem['reminderIsActive']}');
-      if (DateTime.parse(rem['reminderDate']).isAfter(DateTime.now()) &&
-          rem['reminderIsActive']) {
-        thisReminderList.add(rem);
-      }
-    }).toList();
-
     /*await notification.scheduleNotification(seconds: 30);
     Toasts.show(
       context,
       "Notification scheduled at ${DateTime.now().add(const Duration(seconds: 20))}",
       type: ToastType.info,
     );*/
+  }
+
+  List<Map<String, dynamic>> getActiveReminders(ApiProvider api) {
+    return api.expenseReminderList.where((rem) {
+      return DateTime.parse(rem['reminderDate']).isAfter(DateTime.now()) &&
+          rem['reminderIsActive'] == true;
+    }).toList();
   }
 
   @override
@@ -168,7 +164,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                           child:
                               api.groupList.isEmpty &&
-                                      thisReminderList.isEmpty &&
+                                      getActiveReminders(api).isEmpty &&
                                       api.userExpenseList.isEmpty
                                   ? ListView(
                                     physics:
@@ -201,7 +197,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                           if (data != null) {
                                             api.expenseReminderList.add(data);
-                                            thisReminderList.add(data);
+                                            getActiveReminders(api).add(data);
                                           }
                                         },
                                         LinearGradient(
@@ -268,6 +264,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 5.0,
+                                          vertical: 5.0,
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
@@ -281,45 +278,53 @@ class _DashboardPageState extends State<DashboardPage> {
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                             ),
-                                            ElevatedButton.icon(
-                                              onPressed:
-                                                  api
-                                                          .expenseReminderList
-                                                          .isEmpty
-                                                      ? null
-                                                      : () => Navigator.of(
-                                                        context,
-                                                      ).push(
-                                                        MaterialPageRoute(
-                                                          builder:
-                                                              (context) =>
-                                                                  AllReminderPage(),
+                                            if (api
+                                                .expenseReminderList
+                                                .isNotEmpty)
+                                              ElevatedButton.icon(
+                                                onPressed:
+                                                    api
+                                                            .expenseReminderList
+                                                            .isEmpty
+                                                        ? null
+                                                        : () async {
+                                                          await Navigator.of(
+                                                            context,
+                                                          ).push(
+                                                            MaterialPageRoute(
+                                                              builder:
+                                                                  (context) =>
+                                                                      AllReminderPage(),
+                                                            ),
+                                                          );
+                                                          // Rebuild after coming back
+                                                          setState(() {});
+                                                        },
+
+                                                style: ElevatedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12.0,
                                                         ),
-                                                      ),
-                                              style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        12.0,
-                                                      ),
+                                                  ),
+                                                  elevation: 0.0,
+                                                  animationDuration: Duration(
+                                                    milliseconds: 500,
+                                                  ),
                                                 ),
-                                                elevation: 0.0,
-                                                animationDuration: Duration(
-                                                  milliseconds: 500,
+                                                label: Text(
+                                                  'View all',
+                                                  style: TextStyle(
+                                                    letterSpacing: 1.5,
+                                                  ),
                                                 ),
+                                                icon: Icon(Icons.arrow_forward),
                                               ),
-                                              label: Text(
-                                                'View all',
-                                                style: TextStyle(
-                                                  letterSpacing: 1.5,
-                                                ),
-                                              ),
-                                              icon: Icon(Icons.arrow_forward),
-                                            ),
                                           ],
                                         ),
                                       ),
-                                      thisReminderList.isEmpty
+                                      getActiveReminders(api).isEmpty
                                           ? buildCreateDataBox(
                                             context,
                                             "Looks empty 👀\n\nAdd your first expense reminder!",
@@ -347,13 +352,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                               physics: BouncingScrollPhysics(),
                                               scrollDirection: Axis.horizontal,
                                               itemCount:
-                                                  thisReminderList.length,
+                                                  getActiveReminders(
+                                                    api,
+                                                  ).length,
                                               separatorBuilder:
                                                   (context, index) =>
                                                       const SizedBox(width: 12),
                                               itemBuilder: (context, index) {
                                                 final reminder =
-                                                    thisReminderList[index];
+                                                    getActiveReminders(
+                                                      api,
+                                                    )[index];
                                                 return buildReminderCard(
                                                   reminder,
                                                 );
@@ -684,7 +693,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Padding(
                                         padding: const EdgeInsets.only(
                                           top: 5.0,
-                                          bottom: 5.0,
+                                          bottom: 10.0,
                                           left: 5.0,
                                           right: 5.0,
                                         ),
@@ -700,39 +709,40 @@ class _DashboardPageState extends State<DashboardPage> {
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                             ),
-                                            ElevatedButton.icon(
-                                              onPressed:
-                                                  api.userExpenseList.isEmpty
-                                                      ? null
-                                                      : () => Navigator.of(
-                                                        context,
-                                                      ).push(
-                                                        MaterialPageRoute(
-                                                          builder:
-                                                              (context) =>
-                                                                  AllExpensePage(),
+                                            if (api.userExpenseList.isNotEmpty)
+                                              ElevatedButton.icon(
+                                                onPressed:
+                                                    api.userExpenseList.isEmpty
+                                                        ? null
+                                                        : () => Navigator.of(
+                                                          context,
+                                                        ).push(
+                                                          MaterialPageRoute(
+                                                            builder:
+                                                                (context) =>
+                                                                    AllExpensePage(),
+                                                          ),
                                                         ),
-                                                      ),
-                                              style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        12.0,
-                                                      ),
+                                                style: ElevatedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12.0,
+                                                        ),
+                                                  ),
+                                                  elevation: 0.0,
+                                                  animationDuration: Duration(
+                                                    milliseconds: 500,
+                                                  ),
                                                 ),
-                                                elevation: 0.0,
-                                                animationDuration: Duration(
-                                                  milliseconds: 500,
+                                                label: Text(
+                                                  'View all',
+                                                  style: TextStyle(
+                                                    letterSpacing: 1.5,
+                                                  ),
                                                 ),
+                                                icon: Icon(Icons.arrow_forward),
                                               ),
-                                              label: Text(
-                                                'View all',
-                                                style: TextStyle(
-                                                  letterSpacing: 1.5,
-                                                ),
-                                              ),
-                                              icon: Icon(Icons.arrow_forward),
-                                            ),
                                           ],
                                         ),
                                       ),
@@ -795,42 +805,6 @@ class _DashboardPageState extends State<DashboardPage> {
     final Color accent = isExpense ? Colors.red : Colors.green;
 
     return GestureDetector(
-      onLongPress: () {
-        DialogUtils.showGenericDialog(
-          context: context,
-          title: DialogUtils.titleText('Remove Reminder?'),
-          message: Text(
-            'Do you want to remove this reminder "${reminder['reminderName']}"?',
-          ),
-          onCancel: () => Navigator.of(context).pop(),
-          cancelText: 'Cancel',
-          showCancel: true,
-          onConfirm: () async {
-            ApiProvider api = Provider.of<ApiProvider>(context, listen: false);
-            Navigator.of(context).pop();
-            setState(() {
-              api.expenseReminderList.removeWhere(
-                (rem) => rem['reminderId'] == reminder['reminderId'],
-              );
-
-              thisReminderList.removeWhere(
-                (rem) => rem['reminderId'] == reminder['reminderId'],
-              );
-            });
-            await api.deleteReminder(context, reminder['reminderId']).then((
-              Response res,
-            ) {
-              Toasts.show(
-                context,
-                'Reminder "${reminder['reminderName']}" removed',
-                type: ToastType.info,
-              );
-            });
-          },
-          confirmColor: Colors.red,
-          confirmText: 'Remove',
-        );
-      },
       child: Container(
         width: 300,
         margin: const EdgeInsets.symmetric(vertical: 6),
@@ -844,17 +818,9 @@ class _DashboardPageState extends State<DashboardPage> {
               borderRadius: BorderRadius.circular(16),
               gradient: LinearGradient(
                 colors:
-                    isExpense
-                        ? [
-                          Color(0xFFCC95C0),
-                          Color(0xFFDBD4B4),
-                          Color(0xFF7AA1D2),
-                        ]
-                        : [
-                          Color(0xFF1FA2FF),
-                          Color(0xFF12D8FA),
-                          Color(0xFFA6FFCB),
-                        ],
+                    Theme.of(context).brightness == Brightness.dark
+                        ? [const Color(0xFF232526), const Color(0xFF414345)]
+                        : [const Color(0xFF2193b0), const Color(0xFF6dd5ed)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -930,12 +896,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 10.0,
+                        vertical: 5.5,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(5.0),
                       ),
                       child: Row(
                         children: [
@@ -971,13 +937,15 @@ class _DashboardPageState extends State<DashboardPage> {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 10.0,
+                            vertical: 5.5,
                           ),
                           decoration: BoxDecoration(
-                            color: (isRecurring ? Colors.indigo : Colors.grey)
-                                .withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(20),
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.black54
+                                    : Colors.white10,
+                            borderRadius: BorderRadius.circular(5.0),
                           ),
                           child: Row(
                             children: [
@@ -1003,18 +971,22 @@ class _DashboardPageState extends State<DashboardPage> {
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 10.0,
+                            vertical: 5.5,
                           ),
                           decoration: BoxDecoration(
-                            color: (isActive ? Colors.green : Colors.red)
-                                .withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(20),
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.black54
+                                    : Colors.white10,
+                            borderRadius: BorderRadius.circular(5.0),
                           ),
                           child: Row(
                             children: [
                               Icon(
-                                isActive ? Icons.check_circle : Icons.cancel,
+                                isActive
+                                    ? Icons.check_circle_outline
+                                    : Icons.update_disabled,
                                 size: 12,
                                 color: Colors.white,
                               ),
@@ -1024,7 +996,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
@@ -1034,12 +1006,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 10.0,
+                        vertical: 5.5,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(5.0),
                       ),
                       child: Row(
                         children: [

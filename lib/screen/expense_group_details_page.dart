@@ -30,19 +30,16 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
   _ExpenseGroupDetailsPageState({required this.groupMap});
 
   late GroupModel group;
-  late List expenseList;
 
   @override
   void initState() {
     super.initState();
     group = GroupModel.fromJson(groupMap);
-    expenseList = group.expenses.toList();
-    expenseList.sort((a, b) {
+    group.expenses.sort((a, b) {
       final dateA = DateTime.parse(a['expenseDate']);
       final dateB = DateTime.parse(b['expenseDate']);
-      return dateB.compareTo(dateA); // 👈 descending
+      return dateB.compareTo(dateA);
     });
-    debugPrint("groupId:::${group.exGroupId}");
   }
 
   @override
@@ -408,9 +405,9 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
                                   );
                                 },
                                 physics: BouncingScrollPhysics(),
-                                itemCount: expenseList.length,
+                                itemCount: group.expenses.length,
                                 itemBuilder: (context, index) {
-                                  Map<String, dynamic> expense = expenseList
+                                  Map<String, dynamic> expense = group.expenses
                                       .elementAt(index);
                                   return Dismissible(
                                     key: ValueKey(expense['expenseId']),
@@ -596,14 +593,15 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
                                           style: TextStyle(fontSize: 17.5),
                                         ),
                                         subtitle: Text(
-                                          '${expense['expensePaidBy']} ${expense['expenseSpendType'] == 'expense' ? "paid" : "received"} ₹${expense['expenseAmount']}',
+                                          '${expense['expensePaidBy']} ${expense['expenseSpendType'] == 'expense' ? "paid" : "received"} ₹${formatCurrency(int.parse(expense['expenseAmount'] ), context)}',
                                           style: TextStyle(fontSize: 12.5),
                                         ),
                                         trailing: Card(
-                                          color: expense['expenseSpendType'] ==
-                                              'income'
-                                              ? Colors.green
-                                              : Colors.red,
+                                          color:
+                                              expense['expenseSpendType'] ==
+                                                      'income'
+                                                  ? Colors.green
+                                                  : Colors.red,
                                           margin: EdgeInsets.zero,
                                           elevation: 0.0,
                                           child: Container(
@@ -641,6 +639,15 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
               if (updatedGroup != null) {
                 setState(() {
                   group = GroupModel.fromJson(updatedGroup);
+                  group.expenses.sort((a, b) {
+                    final dateA = DateTime.parse(a['expenseDate']);
+                    final dateB = DateTime.parse(b['expenseDate']);
+                    return dateB.compareTo(dateA);
+                  });
+                  api.groupList.removeWhere(
+                    (thisGrp) => thisGrp['exGroupId'] == group.exGroupId,
+                  );
+                  api.groupList.add(group.toJson());
                 });
               }
             },

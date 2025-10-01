@@ -152,6 +152,21 @@ class ApiProvider extends ChangeNotifier {
     return resp;
   }
 
+  Future<Response> updateReminder(
+    BuildContext context,
+    Map<String, dynamic> body,
+  ) async {
+    var finalUrl = '$baseUrl/expenseReminder/update';
+    Response resp = await getHttp(context, finalUrl, 'PUT', requestBody: body);
+    notifyListeners();
+    return resp;
+  }
+
+  updateRemindersList(List<Map<String, dynamic>> newList) {
+    expenseReminderList = newList;
+    notifyListeners();
+  }
+
   Future getUserExpenses(String userId, BuildContext context) async {
     var finalUrl = '$baseUrl/expense/user/$userId';
     try {
