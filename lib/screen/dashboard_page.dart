@@ -1,6 +1,4 @@
 import 'dart:ui';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -14,11 +12,9 @@ import 'package:wisepaise/screen/create_expense_page.dart';
 import 'package:wisepaise/screen/expense_group_details_page.dart';
 import 'package:wisepaise/screen/create_reminder_page.dart';
 import 'package:wisepaise/utils/utils.dart';
-import 'package:intl/intl.dart';
 
 import '../providers/auth_provider.dart';
-import '../utils/dialog_utils.dart';
-import '../utils/toast.dart';
+import 'all_group_page.dart';
 import 'all_reminder_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -70,6 +66,14 @@ class _DashboardPageState extends State<DashboardPage> {
     AuthProvider auth = Provider.of<AuthProvider>(context, listen: false);
     return Consumer<ApiProvider>(
       builder: (_, api, __) {
+        List top5Groups = List.from(api.groupList)
+          ..sort((a, b) {
+            final dateA = DateTime.parse(a['exGroupCreatedOn']);
+            final dateB = DateTime.parse(b['exGroupCreatedOn']);
+            return dateB.compareTo(dateA);
+          });
+
+        top5Groups = top5Groups.take(5).toList();
         return Consumer<SettingsProvider>(
           builder: (_, set, __) {
             return Scaffold(
@@ -377,12 +381,59 @@ class _DashboardPageState extends State<DashboardPage> {
                                           vertical: 5.0,
                                           horizontal: 5.0,
                                         ),
-                                        child: Text(
-                                          "Expense Groups",
-                                          style: theme.textTheme.titleLarge
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.bold,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+
+                                          children: [
+                                            Text(
+                                              "Expense Groups",
+                                              style: theme.textTheme.titleLarge
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                            if (api.groupList.isNotEmpty &&
+                                                api.groupList.length > 5)
+                                              ElevatedButton.icon(
+                                                onPressed:
+                                                    api.groupList.isEmpty
+                                                        ? null
+                                                        : () async {
+                                                          await Navigator.of(
+                                                            context,
+                                                          ).push(
+                                                            MaterialPageRoute(
+                                                              builder:
+                                                                  (context) =>
+                                                                      AllGroupPage(),
+                                                            ),
+                                                          );
+                                                          // Rebuild after coming back
+                                                          setState(() {});
+                                                        },
+
+                                                style: ElevatedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12.0,
+                                                        ),
+                                                  ),
+                                                  elevation: 0.0,
+                                                  animationDuration: Duration(
+                                                    milliseconds: 500,
+                                                  ),
+                                                ),
+                                                label: Text(
+                                                  'View all',
+                                                  style: TextStyle(
+                                                    letterSpacing: 1.5,
+                                                  ),
+                                                ),
+                                                icon: Icon(Icons.arrow_forward),
                                               ),
+                                          ],
                                         ),
                                       ),
                                       if (api.groupList.isEmpty)
@@ -409,15 +460,26 @@ class _DashboardPageState extends State<DashboardPage> {
                                         )
                                       else
                                         SizedBox(
-                                          height: 100.0,
-                                          child: ListView.builder(
+                                          height: 175.0,
+                                          child: GridView.builder(
                                             physics: BouncingScrollPhysics(),
                                             scrollDirection: Axis.horizontal,
+                                            itemCount: top5Groups.length,
+                                            gridDelegate:
+                                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                                  crossAxisCount: 2, // 2 rows
+                                                  mainAxisSpacing:
+                                                      8.0, // spacing between columns
+                                                  crossAxisSpacing:
+                                                      8.0, // spacing between rows
+                                                  mainAxisExtent: 300,
+                                                ),
                                             itemBuilder: (context, index) {
                                               Map<String, dynamic> thisGroup =
                                                   api.groupList[index];
-                                              return SizedBox(
-                                                width: 300,
+                                              return Hero(
+                                                tag:
+                                                    'groupCard_${thisGroup['exGroupId']}',
                                                 child: Card(
                                                   elevation: 1,
                                                   shape: RoundedRectangleBorder(
@@ -683,7 +745,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 ),
                                               );
                                             },
-                                            itemCount: api.groupList.length,
                                           ),
                                         ),
 

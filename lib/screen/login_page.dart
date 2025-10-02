@@ -86,11 +86,6 @@ class _LoginPageState extends State<LoginPage>
                 position: _slideAnimation,
                 child: Material(
                   elevation: 12,
-                  color:
-                      isDark
-                          ? theme.colorScheme.surfaceContainerHighest
-                          : theme.colorScheme.surface,
-                  surfaceTintColor: theme.colorScheme.surfaceTint,
                   shape: RoundedRectangleBorder(
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(24),

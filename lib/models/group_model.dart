@@ -12,7 +12,7 @@ class GroupModel {
   double exGroupIncome;
   double exGroupExpenses;
 
-   GroupModel({
+  GroupModel({
     required this.exGroupId,
     required this.exGroupName,
     required this.exGroupDesc,
@@ -62,17 +62,31 @@ class GroupModel {
       'exGroupExpenses': exGroupExpenses,
     };
   }
+
   // 🔹 Setters
   set setExGroupId(String id) => exGroupId = id;
+
   set setExGroupName(String name) => exGroupName = name;
+
   set setExGroupDesc(String desc) => exGroupDesc = desc;
+
   set setExGroupImageURL(String url) => exGroupImageURL = url;
+
   set setExGroupType(String type) => exGroupType = type;
+
   set setExGroupShared(bool shared) => exGroupShared = shared;
+
   set setExGroupMembers(List<String> members) => exGroupMembers = members;
+
   set setExGroupCreatedOn(String createdOn) => exGroupCreatedOn = createdOn;
+
   set setExGroupOwnerId(String ownerId) => exGroupOwnerId = ownerId;
-  set setExpenses(List<dynamic> exp) => expenses = exp;
+
+  setExpenses(List exp) {
+    expenses = exp;
+  }
+
   set setExGroupIncome(double income) => exGroupIncome = income;
+
   set setExGroupExpenses(double exps) => exGroupExpenses = exps;
 }

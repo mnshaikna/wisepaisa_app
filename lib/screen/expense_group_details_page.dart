@@ -45,7 +45,7 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
   @override
   Widget build(BuildContext context) {
     AuthProvider auth = Provider.of<AuthProvider>(context, listen: false);
-
+    List expenseList = group.expenses;
     return Consumer<ApiProvider>(
       builder: (_, api, __) {
         return Scaffold(
@@ -108,248 +108,277 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
               children: [
                 Column(
                   children: [
-                    Card(
-                      elevation: 1,
-                      margin: const EdgeInsets.all(16.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Group image or fallback
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child:
-                                      group.exGroupImageURL.isNotEmpty
-                                          ? Image.network(
-                                            group.exGroupImageURL,
-                                            width: 60,
-                                            height: 60,
-                                            fit: BoxFit.cover,
-                                          )
-                                          : Container(
-                                            width: 60,
-                                            height: 60,
-                                            color: Colors.grey.shade300,
-                                            child: Icon(
-                                              Icons.group,
-                                              size: 32,
-                                              color: Colors.grey,
+                    Hero(
+                      tag: 'groupCard_${group.exGroupId}',
+                      flightShuttleBuilder: (
+                        flightContext,
+                        animation,
+                        direction,
+                        fromContext,
+                        toContext,
+                      ) {
+                        return Material(
+                          child:
+                              (direction == HeroFlightDirection.push
+                                  ? fromContext.widget
+                                  : toContext.widget),
+                        );
+                      },
+                      child: Card(
+                        elevation: 1,
+                        margin: const EdgeInsets.all(16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Group image or fallback
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child:
+                                        group.exGroupImageURL.isNotEmpty
+                                            ? Image.network(
+                                              group.exGroupImageURL,
+                                              width: 60,
+                                              height: 60,
+                                              fit: BoxFit.cover,
+                                            )
+                                            : Container(
+                                              width: 60,
+                                              height: 60,
+                                              color: Colors.grey.shade300,
+                                              child: Icon(
+                                                Icons.group,
+                                                size: 32,
+                                                color: Colors.grey,
+                                              ),
                                             ),
-                                          ),
-                                ),
-                                const SizedBox(width: 12),
+                                  ),
+                                  const SizedBox(width: 12),
 
-                                // Group name & type
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        group.exGroupName,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-
-                                      if (group.exGroupDesc.isNotEmpty)
+                                  // Group name & type
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
                                         Text(
-                                          group.exGroupDesc,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey.shade700,
+                                          group.exGroupName,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Icon(
-                                            typeList
-                                                .elementAt(
-                                                  int.parse(group.exGroupType),
-                                                )
-                                                .icon,
-                                            size: 20.0,
-                                          ),
-                                          SizedBox(width: 5.0),
+
+                                        if (group.exGroupDesc.isNotEmpty)
                                           Text(
-                                            typeList
-                                                .elementAt(
-                                                  int.parse(group.exGroupType),
-                                                )
-                                                .name,
+                                            group.exGroupDesc,
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Colors.grey.shade600,
+                                              color: Colors.grey.shade700,
                                             ),
                                           ),
-                                        ],
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Icon(
+                                              typeList
+                                                  .elementAt(
+                                                    int.parse(
+                                                      group.exGroupType,
+                                                    ),
+                                                  )
+                                                  .icon,
+                                              size: 20.0,
+                                            ),
+                                            SizedBox(width: 5.0),
+                                            Text(
+                                              typeList
+                                                  .elementAt(
+                                                    int.parse(
+                                                      group.exGroupType,
+                                                    ),
+                                                  )
+                                                  .name,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Icon(Icons.person, size: 20.0),
+                                      SizedBox(width: 5.0),
+                                      Text(
+                                        auth.user!.displayName!,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey.shade600,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(Icons.person, size: 20.0),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      auth.user!.displayName!,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey.shade600,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.date_range, size: 20.0),
+                                      SizedBox(width: 5.0),
+                                      Text(
+                                        formatDateString(
+                                          group.exGroupCreatedOn,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey.shade600,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.date_range, size: 20.0),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      formatDateString(group.exGroupCreatedOn),
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                SizedBox(height: 15.0),
-                                Row(
-                                  mainAxisAlignment:
-                                      group.exGroupShared &&
-                                              group.exGroupMembers.isNotEmpty
-                                          ? MainAxisAlignment.spaceBetween
-                                          : MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    if (group.exGroupShared &&
-                                        group.exGroupMembers.isNotEmpty)
-                                      initialsRow(group.exGroupMembers),
-                                    if (group.exGroupShared &&
-                                        group.exGroupMembers.isNotEmpty)
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.arrow_upward,
-                                                color: Colors.green,
-                                              ),
-                                              Text(
-                                                formatCurrency(
-                                                  group.exGroupIncome,
-                                                  context,
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  SizedBox(height: 15.0),
+                                  Row(
+                                    mainAxisAlignment:
+                                        group.exGroupShared &&
+                                                group.exGroupMembers.isNotEmpty
+                                            ? MainAxisAlignment.spaceBetween
+                                            : MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      if (group.exGroupShared &&
+                                          group.exGroupMembers.isNotEmpty)
+                                        initialsRow(
+                                          group.exGroupMembers,
+                                          context,
+                                        ),
+                                      if (group.exGroupShared &&
+                                          group.exGroupMembers.isNotEmpty)
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.arrow_upward,
+                                                  color: Colors.green,
                                                 ),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  letterSpacing: 1.5,
+                                                Text(
+                                                  formatCurrency(
+                                                    group.exGroupIncome,
+                                                    context,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 1.5,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(width: 5.0),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.arrow_downward,
-                                                color: Colors.red,
-                                              ),
-                                              Text(
-                                                formatCurrency(
-                                                  group.exGroupExpenses,
-                                                  context,
+                                              ],
+                                            ),
+                                            SizedBox(width: 5.0),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.arrow_downward,
+                                                  color: Colors.red,
                                                 ),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  letterSpacing: 1.5,
+                                                Text(
+                                                  formatCurrency(
+                                                    group.exGroupExpenses,
+                                                    context,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 1.5,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      )
-                                    else
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.arrow_upward,
-                                                color: Colors.green,
-                                              ),
-                                              Text(
-                                                formatCurrency(
-                                                  group.exGroupIncome,
-                                                  context,
+                                              ],
+                                            ),
+                                          ],
+                                        )
+                                      else
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.arrow_upward,
+                                                  color: Colors.green,
                                                 ),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  letterSpacing: 1.5,
+                                                Text(
+                                                  formatCurrency(
+                                                    group.exGroupIncome,
+                                                    context,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 1.5,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(width: 5.0),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.arrow_downward,
-                                                color: Colors.red,
-                                              ),
-                                              Text(
-                                                formatCurrency(
-                                                  group.exGroupExpenses,
-                                                  context,
+                                              ],
+                                            ),
+                                            SizedBox(width: 5.0),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.arrow_downward,
+                                                  color: Colors.red,
                                                 ),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  letterSpacing: 1.5,
+                                                Text(
+                                                  formatCurrency(
+                                                    group.exGroupExpenses,
+                                                    context,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 1.5,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -395,228 +424,232 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
                                   ),
                                 ),
                               )
-                              : ListView.separated(
-                                separatorBuilder: (context, index) {
-                                  return Divider(
-                                    indent: 25.0,
-                                    endIndent: 25.0,
-                                    height: 15,
-                                    thickness: 0.15,
-                                  );
-                                },
+                              : ListView.builder(
                                 physics: BouncingScrollPhysics(),
-                                itemCount: group.expenses.length,
+                                itemCount: expenseList.length,
                                 itemBuilder: (context, index) {
-                                  Map<String, dynamic> expense = group.expenses
-                                      .elementAt(index);
-                                  return Dismissible(
-                                    key: ValueKey(expense['expenseId']),
-                                    direction: DismissDirection.endToStart,
-                                    background: Container(
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                      ),
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(
-                                          10.0,
+                                  final expense = expenseList[index];
+                                  return Column(
+                                    children: [
+                                      Dismissible(
+                                        key: UniqueKey(),
+                                        direction: DismissDirection.endToStart,
+                                        background: Container(
+                                          alignment: Alignment.centerRight,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                          ),
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(
+                                              10.0,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: const [
+                                              Icon(
+                                                Icons.delete,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(width: 10.0),
+                                              Text(
+                                                'Delete',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  letterSpacing: 1.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          const Icon(
-                                            Icons.delete,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 10.0),
-                                          Text(
-                                            'Delete',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              letterSpacing: 1.5,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
 
-                                    confirmDismiss: (direction) async {
-                                      final shouldDelete =
-                                          await DialogUtils.showGenericDialog(
-                                            context: context,
-                                            title: DialogUtils.titleText(
-                                              'Delete Expense?',
-                                            ),
-                                            message: const Text(
-                                              'Are you sure you want to delete this expense?',
-                                            ),
-                                            onConfirm: () {
-                                              Navigator.of(context).pop(true);
-                                            },
-                                            onCancel:
-                                                () => Navigator.of(
-                                                  context,
-                                                ).pop(false),
-                                            showCancel: true,
-                                            cancelText: 'Cancel',
-                                            confirmText: 'Delete',
-                                            confirmColor: Colors.red,
-                                          );
-                                      return shouldDelete ?? false;
-                                    },
-
-                                    onDismissed: (direction) async {
-                                      final removedExpense =
-                                          group.expenses[index];
-                                      setState(() {
-                                        group.expenses.removeAt(
-                                          index,
-                                        ); // ✅ removes widget immediately
-                                      });
-
-                                      ApiProvider api =
-                                          Provider.of<ApiProvider>(
-                                            context,
-                                            listen: false,
-                                          );
-
-                                      await api
-                                          .updateGroup(context, group.toJson())
-                                          .then((Response resp) {
-                                            debugPrint(
-                                              resp.statusCode.toString(),
-                                            );
-                                            if (resp.statusCode == 200) {
-                                              Toasts.show(
-                                                context,
-                                                "Expense ${expense['expenseTitle']} Removed",
-                                                type: ToastType.success,
+                                        confirmDismiss: (direction) async {
+                                          final shouldDelete =
+                                              await DialogUtils.showGenericDialog(
+                                                context: context,
+                                                title: DialogUtils.titleText(
+                                                  'Delete Expense?',
+                                                ),
+                                                message: const Text(
+                                                  'Are you sure you want to delete this expense?',
+                                                ),
+                                                onConfirm: () {
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pop(true);
+                                                },
+                                                onCancel:
+                                                    () => Navigator.of(
+                                                      context,
+                                                    ).pop(false),
+                                                showCancel: true,
+                                                cancelText: 'Cancel',
+                                                confirmText: 'Delete',
+                                                confirmColor: Colors.red,
                                               );
-
-                                              api.groupList.removeWhere(
-                                                (element) =>
-                                                    element['exGroupId'] ==
-                                                    group.exGroupId,
-                                              );
-                                              api.groupList.add(resp.data);
-                                              setState(() {
-                                                group = GroupModel.fromJson(
-                                                  resp.data,
-                                                );
-                                              });
-                                            }
-                                          });
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 5.0,
-                                      ),
-                                      child: ListTile(
-                                        onTap: () {
-                                          DialogUtils.showGenericDialog(
-                                            context: context,
-                                            showCancel: false,
-                                            onConfirm:
-                                                () => Navigator.pop(context),
-                                            confirmColor: Colors.green,
-                                            confirmText: 'Close',
-                                            title: SizedBox.shrink(),
-                                            message: SizedBox(
-                                              child: expenseCard(expense),
-                                            ),
-                                          );
+                                          return shouldDelete ?? false;
                                         },
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10.0,
+                                        onDismissed: (direction) async {
+                                          setState(() {
+                                            group.expenses.removeAt(index);
+                                          });
+                                          ApiProvider api =
+                                              Provider.of<ApiProvider>(
+                                                context,
+                                                listen: false,
+                                              );
+                                          await api
+                                              .updateGroup(
+                                                context,
+                                                group.toJson(),
+                                              )
+                                              .then((Response resp) {
+                                                debugPrint(
+                                                  resp.statusCode.toString(),
+                                                );
+                                                if (resp.statusCode == 200) {
+                                                  Toasts.show(
+                                                    context,
+                                                    "Expense ${expense['expenseTitle']} Removed",
+                                                    type: ToastType.success,
+                                                  );
+
+                                                  var index = api.groupList
+                                                      .indexWhere(
+                                                        (element) =>
+                                                            element['exGroupId'] ==
+                                                            group.exGroupId,
+                                                      );
+
+                                                  api.groupList[index] =
+                                                      resp.data;
+
+                                                  List<Map<String, dynamic>>
+                                                  tempList =
+                                                      api.groupList.toList();
+                                                  api.setGroupList(tempList);
+                                                  setState(() {
+                                                    group = GroupModel.fromJson(
+                                                      resp.data,
+                                                    );
+                                                  });
+                                                }
+                                              });
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5.0,
                                           ),
-                                        ),
-                                        splashColor: Colors.grey.shade100,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 5.0,
-                                        ),
-                                        leading: Card(
-                                          elevation: 0.0,
-                                          margin: EdgeInsets.zero,
-                                          shape: CircleBorder(),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                            ),
-                                            height: 65.0,
-                                            width: 65.0,
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  DateTime.parse(
-                                                    expense['expenseDate'],
-                                                  ).day.toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 17.5,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                          child: ListTile(
+                                            onTap: () {
+                                              DialogUtils.showGenericDialog(
+                                                context: context,
+                                                showCancel: false,
+                                                onConfirm:
+                                                    () =>
+                                                        Navigator.pop(context),
+                                                confirmColor: Colors.green,
+                                                confirmText: 'Close',
+                                                title: SizedBox.shrink(),
+                                                message: SizedBox(
+                                                  child: expenseCard(expense),
                                                 ),
-                                                Text(
-                                                  month
-                                                      .elementAt(
-                                                        int.parse(
-                                                              DateTime.parse(
-                                                                expense['expenseDate'],
-                                                              ).month.toString(),
-                                                            ) -
-                                                            1,
-                                                      )
-                                                      .toUpperCase(),
-                                                  style: TextStyle(
-                                                    fontSize: 12.5,
-                                                    fontWeight: FontWeight.bold,
-                                                    letterSpacing: 1.5,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        title: Text(
-                                          expense['expenseTitle'],
-                                          style: TextStyle(fontSize: 17.5),
-                                        ),
-                                        subtitle: Text(
-                                          '${expense['expensePaidBy']} ${expense['expenseSpendType'] == 'expense' ? "paid" : "received"} ₹${formatCurrency(int.parse(expense['expenseAmount'] ), context)}',
-                                          style: TextStyle(fontSize: 12.5),
-                                        ),
-                                        trailing: Card(
-                                          color:
-                                              expense['expenseSpendType'] ==
-                                                      'income'
-                                                  ? Colors.green
-                                                  : Colors.red,
-                                          margin: EdgeInsets.zero,
-                                          elevation: 0.0,
-                                          child: Container(
-                                            padding: EdgeInsets.all(10.0),
-                                            decoration: BoxDecoration(
+                                              );
+                                            },
+                                            shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
                                             ),
-                                            child: Text(
-                                              expense['expenseCategory'],
+                                            splashColor: Colors.grey.shade100,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                  horizontal: 5.0,
+                                                ),
+                                            leading: Card(
+                                              elevation: 0.0,
+                                              margin: EdgeInsets.zero,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12.0),
+                                              ),
+                                              child: Container(
+                                                padding: EdgeInsets.all(4.0),
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                height: 65.0,
+                                                width: 65.0,
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      getCategoryIcon(
+                                                        expense['expenseCategory'],
+                                                        expense['expenseSpendType'],
+                                                      ),
+                                                      size: 15.0,
+                                                    ),
+                                                    Divider(
+                                                      endIndent: 10.0,
+                                                      indent: 10.0,
+                                                      thickness: 0.5,
+                                                    ),
+                                                    Text(
+                                                      '${DateTime.parse(expense['expenseDate']).day.toString()} ${month.elementAt(int.parse(DateTime.parse(expense['expenseDate']).month.toString()) - 1).toUpperCase()}',
+                                                      style: TextStyle(
+                                                        fontSize: 12.5,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            title: Text(
+                                              expense['expenseTitle'],
+                                              style: TextStyle(fontSize: 17.5),
+                                            ),
+                                            subtitle: Text(
+                                              '${expense['expenseCategory']} | ${expense['expenseSubCategory']}',
+                                              style: TextStyle(fontSize: 12.5),
+                                            ),
+                                            trailing: Text(
+                                              formatCurrency(
+                                                expense['expenseAmount'],
+                                                context,
+                                              ),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 1.5,
+                                                fontSize: 13.5,
+                                                color:
+                                                    expense['expenseSpendType'] ==
+                                                            'income'
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                      if (index < expenseList.length - 1)
+                                        Divider(
+                                          indent: 25,
+                                          endIndent: 25,
+                                          height: 15,
+                                          thickness: 0.15,
+                                        ),
+                                    ],
                                   );
                                 },
                               ),
@@ -637,18 +670,17 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
               );
 
               if (updatedGroup != null) {
-                setState(() {
-                  group = GroupModel.fromJson(updatedGroup);
-                  group.expenses.sort((a, b) {
-                    final dateA = DateTime.parse(a['expenseDate']);
-                    final dateB = DateTime.parse(b['expenseDate']);
-                    return dateB.compareTo(dateA);
-                  });
-                  api.groupList.removeWhere(
-                    (thisGrp) => thisGrp['exGroupId'] == group.exGroupId,
-                  );
-                  api.groupList.add(group.toJson());
+                group = GroupModel.fromJson(updatedGroup);
+                group.expenses.sort((a, b) {
+                  final dateA = DateTime.parse(a['expenseDate']);
+                  final dateB = DateTime.parse(b['expenseDate']);
+                  return dateB.compareTo(dateA);
                 });
+                api.groupList.removeWhere(
+                  (thisGrp) => thisGrp['exGroupId'] == group.exGroupId,
+                );
+                api.groupList.add(group.toJson());
+                setState(() {});
               }
             },
             shape: RoundedRectangleBorder(
@@ -659,117 +691,6 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
         );
       },
     );
-  }
-
-  Widget initialsRow(List<String> names) {
-    final double avatarSize = 32;
-    final double overlap = 25;
-    final int maxToShow = 5;
-
-    // show max 5 names, rest go in "+X"
-    final visibleNames =
-        names.length > maxToShow ? names.take(maxToShow).toList() : names;
-
-    final totalCount = names.length;
-    final extraCount = totalCount - visibleNames.length;
-
-    // total width for positioning
-    final double totalWidth =
-        avatarSize +
-        ((visibleNames.length - 1) + (extraCount > 0 ? 1 : 0)) * overlap;
-
-    return GestureDetector(
-      onTap: () {
-        DialogUtils.showGenericDialog(
-          context: context,
-          title: DialogUtils.titleText('Group Members'),
-          message: SizedBox(
-            height:
-                names.length > 5
-                    ? MediaQuery.of(context).size.height / 3
-                    : MediaQuery.of(context).size.height / 5,
-            child: ListView(
-              shrinkWrap: true,
-              physics: BouncingScrollPhysics(),
-              children:
-                  names.map((name) {
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          color: Colors.grey.shade300,
-                          child: Icon(
-                            Icons.group,
-                            size: 20,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                      title: Text(name),
-                    );
-                  }).toList(),
-            ),
-          ),
-          showCancel: false,
-          onConfirm: () {
-            Navigator.of(context).pop();
-          },
-          confirmColor: Colors.green,
-          confirmText: 'Close',
-        );
-      },
-      child: SizedBox(
-        height: avatarSize,
-        width: totalWidth,
-        child: Stack(
-          children: [
-            // actual initials
-            for (int i = 0; i < visibleNames.length; i++)
-              Positioned(
-                left: i * overlap,
-                child: CircleAvatar(
-                  radius: avatarSize / 2,
-                  backgroundColor: Colors.lightBlue,
-                  child: Text(
-                    getInitials(visibleNames[i]),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-
-            // "+X" avatar if more members
-            if (extraCount > 0)
-              Positioned(
-                left: visibleNames.length * overlap,
-                child: CircleAvatar(
-                  radius: avatarSize / 2,
-                  backgroundColor: Colors.blue,
-                  child: Text(
-                    "+$extraCount",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts.first[0] + parts.last[0]).toUpperCase();
   }
 
   Widget expenseCard(Map<String, dynamic> expense) {
@@ -784,40 +705,44 @@ class _ExpenseGroupDetailsPageState extends State<ExpenseGroupDetailsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      getCategoryIcon(
-                        expense['expenseCategory'],
-                        expense['expenseSpendType'],
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        getCategoryIcon(
                           expense['expenseCategory'],
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                          softWrap: true,
-                          maxLines: 1,
+                          expense['expenseSpendType'],
                         ),
-                        Text(
-                          expense['expenseSubCategory'] ?? '',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
-                            letterSpacing: 1.5,
-                            fontSize: 12.5,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          softWrap: true,
-                          maxLines: 1,
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              expense['expenseCategory'],
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
+                              maxLines: 1,
+                            ),
+                            Text(
+                              expense['expenseSubCategory'] ?? '',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                                letterSpacing: 1.5,
+                                fontSize: 12.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
+                              maxLines: 1,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
                 Text(
                   "${expense['expenseSpendType'] == 'income' ? '+' : '-'} ₹${expense['expenseAmount']}",

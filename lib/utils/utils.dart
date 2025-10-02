@@ -497,3 +497,110 @@ Widget expenseCard(Map<String, dynamic> expense) {
     ),
   );
 }
+
+Widget initialsRow(List<String> names, BuildContext context) {
+  final double avatarSize = 32;
+  final double overlap = 25;
+  final int maxToShow = 5;
+
+  // show max 5 names, rest go in "+X"
+  final visibleNames =
+      names.length > maxToShow ? names.take(maxToShow).toList() : names;
+
+  final totalCount = names.length;
+  final extraCount = totalCount - visibleNames.length;
+
+  // total width for positioning
+  final double totalWidth =
+      avatarSize +
+      ((visibleNames.length - 1) + (extraCount > 0 ? 1 : 0)) * overlap;
+
+  return GestureDetector(
+    onTap: () {
+      DialogUtils.showGenericDialog(
+        context: context,
+        title: DialogUtils.titleText('Group Members'),
+        message: SizedBox(
+          height:
+              names.length > 5
+                  ? MediaQuery.of(context).size.height / 3
+                  : MediaQuery.of(context).size.height / 5,
+          child: ListView(
+            shrinkWrap: true,
+            physics: BouncingScrollPhysics(),
+            children:
+                names.map((name) {
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        color: Colors.grey.shade300,
+                        child: Icon(Icons.group, size: 20, color: Colors.grey),
+                      ),
+                    ),
+                    title: Text(name),
+                  );
+                }).toList(),
+          ),
+        ),
+        showCancel: false,
+        onConfirm: () {
+          Navigator.of(context).pop();
+        },
+        confirmColor: Colors.green,
+        confirmText: 'Close',
+      );
+    },
+    child: SizedBox(
+      height: avatarSize,
+      width: totalWidth,
+      child: Stack(
+        children: [
+          // actual initials
+          for (int i = 0; i < visibleNames.length; i++)
+            Positioned(
+              left: i * overlap,
+              child: CircleAvatar(
+                radius: avatarSize / 2,
+                backgroundColor: Colors.lightBlue,
+                child: Text(
+                  getInitials(visibleNames[i]),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+
+          // "+X" avatar if more members
+          if (extraCount > 0)
+            Positioned(
+              left: visibleNames.length * overlap,
+              child: CircleAvatar(
+                radius: avatarSize / 2,
+                backgroundColor: Colors.blue,
+                child: Text(
+                  "+$extraCount",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+String getInitials(String name) {
+  final parts = name.trim().split(' ');
+  if (parts.length == 1) return parts.first[0].toUpperCase();
+  return (parts.first[0] + parts.last[0]).toUpperCase();
+}

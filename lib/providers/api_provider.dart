@@ -28,6 +28,11 @@ class ApiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  setGroupList(List<Map<String, dynamic>> list) {
+    groupList = list;
+    notifyListeners();
+  }
+
   Future<Response> getHttp(
     BuildContext context,
     String baseUrl,
@@ -63,7 +68,6 @@ class ApiProvider extends ChangeNotifier {
       } else {
         debugPrint(e.response!.data.toString());
         response = e.response;
-        Toasts.show(context, response!.data['message'], type: ToastType.info);
         debugPrint('Error occurred during API invocation');
         debugPrint('Error is :::${e.response?.toString() ?? e.toString()}');
       }
@@ -96,6 +100,7 @@ class ApiProvider extends ChangeNotifier {
 
   Future getGroups(String userId, BuildContext context) async {
     var finalUrl = '$baseUrl/expenseGroup/user/$userId';
+    groupList = [];
     try {
       await getHttp(context, finalUrl, 'GET').then((Response resp) {
         debugPrint('resp:::${resp.data}');
@@ -117,6 +122,7 @@ class ApiProvider extends ChangeNotifier {
 
   Future getReminders(String userId, BuildContext context) async {
     var finalUrl = '$baseUrl/expenseReminder/user/$userId';
+    expenseReminderList = [];
     try {
       await getHttp(context, finalUrl, 'GET').then((Response resp) {
         debugPrint('resp:::${resp.data}');
@@ -169,6 +175,7 @@ class ApiProvider extends ChangeNotifier {
 
   Future getUserExpenses(String userId, BuildContext context) async {
     var finalUrl = '$baseUrl/expense/user/$userId';
+    userExpenseList = [];
     try {
       await getHttp(context, finalUrl, 'GET').then((Response resp) {
         debugPrint('resp:::${resp.data}');

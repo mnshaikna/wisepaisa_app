@@ -161,6 +161,8 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
                                 TextField(
                                   controller: descController,
                                   textCapitalization: TextCapitalization.sentences,
+                                  keyboardType: TextInputType.text,
+                                  textInputAction: TextInputAction.next,
                                   decoration: InputDecoration(
                                     labelText: "Enter a Desc",
                                     border: OutlineInputBorder(

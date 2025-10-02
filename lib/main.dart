@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -12,10 +13,10 @@ import 'package:wisepaise/screen/home_page.dart';
 import 'package:wisepaise/providers/auth_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wisepaise/screen/splash_page.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await Hive.initFlutter();
   await Hive.openBox('settings');
 
